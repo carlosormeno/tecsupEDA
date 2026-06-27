@@ -2,6 +2,7 @@ package pe.edu.tecsup.lms.enrollments.infrastructure.web;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import pe.edu.tecsup.lms.enrollments.application.command.EnrollStudentCommand;
 import pe.edu.tecsup.lms.enrollments.application.command.EnrollmentCommandHandler;
 import pe.edu.tecsup.lms.enrollments.application.query.EnrollmentQueryRepository;
 import pe.edu.tecsup.lms.enrollments.application.query.EnrollmentReadModel;
+import pe.edu.tecsup.lms.enrollments.application.saga.EnrollmentSagaHandler;
 import pe.edu.tecsup.lms.enrollments.domain.model.Enrollment;
 import pe.edu.tecsup.lms.enrollments.infrastructure.dto.EnrollmentRequest;
 import pe.edu.tecsup.lms.enrollments.infrastructure.dto.EnrollmentResponse;
@@ -29,6 +31,12 @@ public class EnrollmentController {
 
     private final EnrollmentCommandHandler enrollmentCommandHandler;
     private final EnrollmentQueryRepository enrollmentQueryRepository;
+
+    // ========================================
+    // SAGA
+    // ========================================
+
+    private final EnrollmentSagaHandler sagaHandler;
 
     /**
      *  Enroll a student in a course
@@ -46,7 +54,14 @@ public class EnrollmentController {
 
         String enrollmentId = enrollmentCommandHandler.enrollStudent(command);
 
-        return ResponseEntity.ok(new EnrollmentResponse(enrollmentId));
+        //return ResponseEntity.ok(new EnrollmentResponse(enrollmentId));
+
+        // ADAPTAR --------------------------------
+        return ResponseEntity.ok(EnrollmentResponse
+                .builder()
+                .enrollmentId(enrollmentId)
+                .build());
+        // ADAPTAR --------------------------------
     }
 
     /**
@@ -90,6 +105,28 @@ public class EnrollmentController {
     public ResponseEntity<List<EnrollmentReadModel>> getAllEnrollments() {
         log.info("CQRS Query - Leyendo todos los enrollments desde ReadModel");
         return ResponseEntity.ok(enrollmentQueryRepository.findAll());
+    }
+    
+    //POST de Saga
+    @PostMapping("/request")
+    public ResponseEntity<EnrollmentResponse> requestEnrollment(
+            @RequestBody EnrollmentRequest request) {
+
+        // Iniciar saga
+        String enrollmentId = this.sagaHandler.requestEnrollment(request.getStudentId(),
+                request.getStudentName(),
+                request.getCourseId(),
+                request.getAmount());
+
+        EnrollmentResponse response = EnrollmentResponse.builder()
+                                    .enrollmentId(enrollmentId)
+                                    .status("PENDING")
+                                    .message("Enrollment request is being processed")
+                                    .build();
+
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(response);
     }
     
 }
