@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import pe.edu.tecsup.lms.courses.domain.event.CourseCreatedEvent;
 import pe.edu.tecsup.lms.courses.domain.event.CoursePublishedEvent;
 import pe.edu.tecsup.lms.enrollments.domain.event.EnrollmentRequestedEvent;
+import pe.edu.tecsup.lms.payment.domain.event.PaymentFailedEvent;
+import pe.edu.tecsup.lms.payment.domain.event.PaymentProcessedEvent;
 import pe.edu.tecsup.lms.shared.infrastructure.config.KafkaConfig;
 
 @Slf4j
@@ -30,6 +32,10 @@ public class KafkaEventPublisher {
             return KafkaConfig.COURSE_EVENT_TOPIC;
         } else if (event instanceof EnrollmentRequestedEvent) {
             return KafkaConfig.ENROLLMENT_REQUEST_TOPIC;
+        } else if (event instanceof PaymentProcessedEvent) {
+            return KafkaConfig.PAYMENT_PROCESSED_TOPIC;
+        } else if (event instanceof PaymentFailedEvent) {
+            return KafkaConfig.PAYMENT_FAILED_TOPIC;
         } else {
             throw new IllegalArgumentException("Unknown event type: " + event.getEventType());
         }
