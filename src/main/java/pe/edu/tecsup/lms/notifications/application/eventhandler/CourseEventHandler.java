@@ -2,12 +2,14 @@ package pe.edu.tecsup.lms.notifications.application.eventhandler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import pe.edu.tecsup.lms.courses.domain.event.CourseCreatedEvent;
+import pe.edu.tecsup.lms.shared.infrastructure.config.RabbitMQConfig;
 import pe.edu.tecsup.lms.shared.infrastructure.dlq.DeadLetterQueue;
 
 import java.util.Random;
@@ -20,6 +22,13 @@ public class CourseEventHandler {
     private final Random random = new Random();
     private final DeadLetterQueue dlq;
 
+    // Consumidor RabbitMQ
+    @RabbitListener(queues = RabbitMQConfig.COURSE_QUEUE)
+    public void handleCourseCreatedRabbit(CourseCreatedEvent event) {
+        log.info("[RabbitMQ] Course created event received: {}", event);
+    }
+
+    // Consumidor Spring Events (EDA interno - mantiene retry + DLQ)
     @EventListener
     @Retryable(
             maxAttempts = 2,

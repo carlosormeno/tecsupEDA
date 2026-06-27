@@ -19,4 +19,12 @@ public class DomainEvent {
         this.eventType = this.getClass().getSimpleName();
         this.ocurredOn = LocalDateTime.now();
     }
+
+    /**
+     * Obtener la clave del evento para particionamiento en Kafka
+     * @return
+     */
+    public String getKey() {
+        throw new RuntimeException("Method getKey() not implemented");
+    }
 }

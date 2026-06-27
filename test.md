@@ -1,7 +1,14 @@
 for i in 1 2 3 4 5; do
-  curl -s -X POST http://localhost:8080/api/courses \
+  curl -s -X POST http://localhost:9099/api/courses \
     -H "Content-Type: application/json" \
     -d "{\"title\": \"Curso $i\", \"description\": \"Descripción $i\", \"instructor\": \"Instructor $i\"}"
+  echo ""
+done
+
+for i in 1 2 3 4 5 6 7 8 9; do
+  curl -s -X POST http://localhost:9099/api/courses \
+    -H "Content-Type: application/json" \
+    -d "{\"title\": \"Curso en Kafka $i\", \"description\": \"Descripción del Curso en Kafka $i\", \"instructor\": \"Profesor $i\"}"
   echo ""
 done
 
@@ -68,3 +75,20 @@ curl -s -X POST http://localhost:9099/api/es/enrollments/{enrollmentId}/lessons/
 curl -s http://localhost:9099/api/es/enrollments/{enrollmentId}
 
 curl -s http://localhost:9099/api/es/enrollments
+
+
+------ RabbitMQ -------
+
+# 1. Crear curso (publica en Spring Events + RabbitMQ rk.course.created)
+curl -s -X POST http://localhost:9099/api/courses \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Curso RabbitMQ","description":"Mensajería con RabbitMQ","instructor":"Profesor"}'
+
+# 2. Publicar curso (publica en Spring Events + RabbitMQ rk.course.published → PaymentEventHandler)
+curl -s -X PUT http://localhost:9099/api/courses/{id}/publish
+
+# 3. Ver mensajes fallidos en DLQ (H2)
+curl -s http://localhost:9099/api/admin/dlq
+
+# 4. Ver colas y mensajes en la UI de RabbitMQ
+# http://localhost:15672  (admin / admin123)

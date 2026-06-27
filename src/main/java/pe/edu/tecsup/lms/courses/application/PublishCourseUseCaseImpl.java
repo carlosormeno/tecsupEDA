@@ -9,6 +9,10 @@ import pe.edu.tecsup.lms.courses.domain.exception.CourseNotFoundException;
 import pe.edu.tecsup.lms.courses.domain.model.Course;
 import pe.edu.tecsup.lms.courses.domain.repository.CourseRepository;
 import pe.edu.tecsup.lms.shared.domain.event.EventPublisher;
+import pe.edu.tecsup.lms.shared.domain.event.KafkaEventPublisher;
+import pe.edu.tecsup.lms.shared.domain.event.RabbitMQEventPublisher;
+
+import static pe.edu.tecsup.lms.shared.infrastructure.config.RabbitMQConfig.COURSE_PUBLISHED_ROUTING_KEY;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,6 +21,10 @@ public class PublishCourseUseCaseImpl implements PublishCourseUseCase {
     private final CourseRepository repository;
 
     private final EventPublisher eventPublisher;
+
+    private final RabbitMQEventPublisher rabbitMQEventPublisher;
+
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     @Override
     @Transactional
@@ -29,15 +37,19 @@ public class PublishCourseUseCaseImpl implements PublishCourseUseCase {
 
         log.info("Course published: {}", saved.getId());
 
-        // Crear el eventp
-        CoursePublishedEvent event
-                = new CoursePublishedEvent(
-                                            saved.getId().toString(),
-                                            saved.getTitle()
-                                            );
+        CoursePublishedEvent event = new CoursePublishedEvent(
+                saved.getId().toString(),
+                saved.getTitle()
+        );
 
-        // Publicar el evento
+        // Spring Events (EDA interno)
         this.eventPublisher.publish(event);
+
+        // RabbitMQ (mensajería externa)
+        this.rabbitMQEventPublisher.publish(COURSE_PUBLISHED_ROUTING_KEY, event);
+
+        // Kafka (streaming)
+        this.kafkaEventPublisher.publish(event);
 
         return saved;
     }

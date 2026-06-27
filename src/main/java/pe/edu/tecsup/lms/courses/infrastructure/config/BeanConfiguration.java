@@ -11,6 +11,8 @@ import pe.edu.tecsup.lms.courses.application.PublishCourseUseCaseImpl;
 
 import pe.edu.tecsup.lms.courses.domain.repository.CourseRepository;
 import pe.edu.tecsup.lms.shared.domain.event.EventPublisher;
+import pe.edu.tecsup.lms.shared.domain.event.KafkaEventPublisher;
+import pe.edu.tecsup.lms.shared.domain.event.RabbitMQEventPublisher;
 
 /**
  * CONFIGURACIÓN DE BEANS
@@ -22,16 +24,16 @@ import pe.edu.tecsup.lms.shared.domain.event.EventPublisher;
 public class BeanConfiguration {
 
     @Bean
-    public CreateCourseUseCase createCourseUseCase(CourseRepository repository, EventPublisher eventPublisher) {
+    public CreateCourseUseCase createCourseUseCase(CourseRepository repository, EventPublisher eventPublisher, RabbitMQEventPublisher rabbitMQEventPublisher, KafkaEventPublisher kafkaEventPublisher) {
 
-        return new CreateCourseUseCaseImpl(repository, eventPublisher);
+        return new CreateCourseUseCaseImpl(repository, eventPublisher, rabbitMQEventPublisher, kafkaEventPublisher);
 
     }
 
     @Bean
-    public PublishCourseUseCase publishCourseUseCase(CourseRepository repository, EventPublisher eventPublisher) {
+    public PublishCourseUseCase publishCourseUseCase(CourseRepository repository, EventPublisher eventPublisher, RabbitMQEventPublisher rabbitMQEventPublisher, KafkaEventPublisher kafkaEventPublisher) {
 
-        return new PublishCourseUseCaseImpl(repository, eventPublisher);
+        return new PublishCourseUseCaseImpl(repository, eventPublisher, rabbitMQEventPublisher, kafkaEventPublisher);
 
     }
 }
