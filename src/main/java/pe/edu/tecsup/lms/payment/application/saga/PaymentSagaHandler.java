@@ -39,10 +39,10 @@ public class PaymentSagaHandler {
             Thread.sleep(1000 + random.nextInt(2000));
 
             //No falla
-            boolean paymentSuccess = random.nextInt(100) < 60;
+            //boolean paymentSuccess = random.nextInt(100) < 60;
 
             //Obligamos el fallo
-            //boolean paymentSuccess = false;
+            boolean paymentSuccess = false;
 
             if (paymentSuccess) {
 

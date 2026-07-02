@@ -92,3 +92,13 @@ curl -s http://localhost:9099/api/admin/dlq
 
 # 4. Ver colas y mensajes en la UI de RabbitMQ
 # http://localhost:15672  (admin / admin123)
+
+------ SAGA -------
+curl -s -X POST http://localhost:9099/api/es/enrollments/request \
+  -H "Content-Type: application/json" \
+  -d '{
+    "studentId": "student-21",
+    "studentName": "Jose Leon",
+    "courseId": "course-100",
+    "amount": 99.99
+  }'
